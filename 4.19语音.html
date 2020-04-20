@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+             /* 3、连续赋值的问题 */
+                // var a = {n: 1};
+                // var b = a;
+                // a.x = (a = {n: 2}); //
+                // console.log(a.x) //  
+                // console.log(b.x)
+
+                // a=b={n: 1}=FFFF0000
+                // FFFF0000地址上添加一个x属性 FFFF0000 = {n: 1, x: undefined}
+                // a = {n: 2} = 0000FFFF 
+                // a = 0000FFFF , b = FFFF0000
+                // FFFF0000 = {n: 1, x: {n: 2}} 0000FFFF = {n: 2}
+
+            /**
+             * js中都是值的传递 => 
+             * 优先级（那么多根本记不住）// MDN () new ....
+             */
+
+
+             /* 4、类数组的题 */ 
+                // var obj = {
+                //     '2': 3,
+                //     '3': 4,
+                //     'length': 2,
+                //     'push': Array.prototype.push,
+                // } 
+                // obj.push(1)
+                // obj.push(2)
+                // console.log(obj)
+            /**
+             * 类数组：拥有一个 length 属性和若干索引属性的对象
+             * 各种转数组的操作。尤其是Array.from(a[, b]);b应该是一个函数吧，相当于map对每一项进行一个处理，类似还有JSON.stringify（{a: '1', b: '1'}, 可选参数）数组、函数 function () {return 1} ['a']
+             * set和map能接受类数组做参数吗。好像不能使用iterator遍历吧.
+            */
+           // Array.from(类数组, 可选参数是一个函数)、[].slice.call()、[...类数组]、
+           // iterator
+
+            // function Foo() {
+            //     getName = function() {console.log(1)}; // 自身没有getName变量，Scope寻找上一级window
+            //     return this;
+            // }
+            // Foo.getName = function() {console.log(2)}; // Foo自身的属性，name = 函数名、length = 形参个数
+            // Foo.prototype.getName = function() {console.log(3)}; // 原型上放属性getName
+            // var getName = function() {console.log(4)}; // 表达式 getName = console.log(4)
+            // function getName() {console.log(5)}; 
+
+            // Foo.getName(); // 2
+            // getName(); // 4
+            // Foo().getName(); // 1
+            // getName(); // 1
+            // new Foo.getName(); // 2 
+
+            // new Foo().getName(); // 3 // 实例自身没有getName属性。
+            // new new Foo().getName(); // 3
+            /**
+             * 原型及原型链，各种继承的方法。原型链、构造函数、原型、组合继承、寄生式、寄生式组合继承、class
+             * 优先级
+             * 关于继承那几个方法，可能写的有误，看https://github.com/mqyqingfeng/Blog/issues/16.了解这些方法就行。先自用到的少了，大部分都直接class
+             */
+
+            var age = 20;
+            var obj = {
+                age: 10,
+                foo: function(fn) {
+                    fn.call(this)(); // this => obj
+                    arguments[0]()();
+                    arguments[0].call(this)();
+                    arguments[0]().call(this);
+                }
+            };
+            function temp() {
+                return function() {
+                    console.log(this.age);
+                } // 匿名函数的this永远指向window
+            }
+            obj.foo(temp);
+            // temp.call(this) => 返回一个function() {console.log(this.age)}() => window
+            /**
+             * 函数的4中调用方法对应四种this绑定方式
+             * 1、构造函数调用与new绑定。使用new调用一个构造函数，this肯定指向实例。
+             * 2、作为函数方法调用与显式绑定。call、apply、bind。指向传入的对象。可以解决隐式调用丢失，包裹函数、或者重复的辅助函数
+             * 3、作为对象的方法调用与隐式绑定。挂在对象上，使用obj.a调用。指向最后一个调用对象。作为参数或者变量传递时候
+             * 4、作为函数调用与默认绑定。全局对象
+             * 5、箭头函数。不存在this，跟父级。不能new、无arguments、不能bind。。。
+             * 6、setTimeout、匿名函数中的this指向window
+             */
+
+            // 1、function Foo() {} 
+            // new Foo(); // 指向实例
+
+            // 2、Foo.call(window)
+
+            // 3、let obj = {c: {a: function() {}}}
+
+            let obj1 = {a: function() {console.log(this)}}
+            function func(temp) {
+                temp(); // 隐式调用丢失。并不一定全指向window
+                return this;
+            }
+            console.log(func(obj1.a));
+
+            var obj1 = {a:1, foo: function() {console.log(this.a)}};
+            var obj2 = {a:2, foo:obj1.foo}
+            obj2.foo();
+            
+    </script>
+</body>
+</html>

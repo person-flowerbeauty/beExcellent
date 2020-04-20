@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="box">0</div>
+    <script>
+
+        /* 1、浏览器机制的题 */
+        var a = 0;
+        if (true) {
+            a = 1; // 全局a应该没有变化 0
+            function a() {}; // => // 全局跟块都有同一个变量，全局的映射。执行完此行，全局a = 1. 此步后就是操作块级作用域内变量
+            a = 21;
+            console.log(a);
+        }
+        console.log(a);
+        /**
+         * 涉及知识点 - 作用域 ： 静态作用域和动态作用域。js中都是静态作用域。
+         * 静态作用域就是：在函数定义的时候就决定了函数的作用域。相反动态作用域是函数调用的时候决定作用域。
+         * js执行一段可执行代码时候总会先创建对应的执行上下文（execution context，也就是周老师总说的EC）：有三个要素：变量对象VO\AO、作用域链Scope、this
+         * 执行时：会把当前执行上下文押入栈，执行完毕后再推出 - 初始化（初始化那三个要素）- 执行
+         * 形参赋值、变量提升等就在初始化阶段
+         * 最在es6中提出了块级作用域。类如if、for等都是块级作用域。这就造成function受到了块级作用域影响，不能像之前es5那样无视if等块进行函数全局声明定义
+         * 浏览器为了兼容当前es5跟es6的现状，新版浏览器都做了相应的处理
+         */
+
+        /* 2、一个同学的面试题 */
+        let origin = [
+            [1, 2],
+            [3, 4],
+            [
+                [5, 6],
+                [7, 8]
+            ],
+            [
+                [
+                    [9, 10],
+                    [11, 12]
+                ]
+            ]
+        ];
+        // 处理成
+        [
+            [1, 2], [3, 4], [5, 6], [7, 8], [9, 10], [11, 12]
+        ]
+
+        function cFlat(array) {
+            if (!Array.isArray(array)) return [];
+            return array.reduce((accu, current) => {
+                return accu.concat(Array.isArray(current) && current.some(item => Array.isArray(item)) ? cFlat(current) : [current]);
+            }, []);
+        }
+
+        function ccFlag(array) {
+            let path = [];
+            if (!Array.isArray(array)) return [];
+            array.filter(Boolean).forEach(item => {
+                if(!Array.isArray(item)) return path.push([item]);
+                if (item.every(i => !Array.isArray(i))) return path.push(item);
+                path = path.concat(flatArray(item));
+            })
+            return path;
+        }
+        console.log('cFlat', cFlat(origin));
+
+        // 洪丹。
+        let result = [];
+        function flatArray1(array) {
+            let path = [];
+            if(Array.isArray(array)) {
+                array.forEach(item => {
+                    if(!Array.isArray(item)) {
+                        path.push(item);
+                    } else {
+                        flatArray1(item, path, result);
+                    }
+                })
+                if(path.length) {
+                    result.push([...path]);
+                }
+            }
+            return result;
+        }
+        console.log(flatArray1([
+            [1, 2],
+            [3, 4, [11, 12]],
+            [
+                [5],
+                [7, 8]
+            ],
+            [
+                [
+                    [9, 10],
+                    [11, 12, [15, 16]]
+                ]
+            ]
+        ]))
+
+        /* 3、连续赋值的问题 */
+        var a = {n: 1};
+        var b = a;
+        a.x = a = {n: 2}; 
+        console.log(a.x)
+        console.log(b.x)
+        /**
+         * js中都是值的传递
+         * 优先级（那么多根本记不住）
+         */
+
+        /* 4、类数组的题 */
+        var obj = {
+            '2': 3,
+            '3': 4,
+            'length': 2,
+            'push': Array.prototype.push
+        }
+        obj.push(1)
+        obj.push(2)
+        console.log(obj)
+        /**
+         * 类数组：拥有一个 length 属性和若干索引属性的对象
+         * 各种转数组的操作。尤其是Array.from(a[, b]);b应该是一个函数吧，相当于map对每一项进行一个处理，类似还有JSON.stringify（）
+         * set和map能接受类数组做参数吗。好像不能使用iterator遍历吧.
+         */
+
+        /* 5 */
+        function Foo() {
+            getName = function() {console.log(1)};
+            return this;
+        }
+        Foo.getName = function() {console.log(2)};
+        Foo.prototype.getName = function() {console.log(3)};
+        var getName = function() {console.log(4)};
+        function getName() {console.log(5)};
+
+        Foo.getName(); // 2
+        getName(); // 4
+        Foo().getName(); // 1
+        getName(); // 1
+        new Foo.getName(); // 2
+        new Foo().getName(); // 3
+        new new Foo().getName(); // 3
+        /**
+         * 原型及原型链，各种继承的方法。原型链、构造函数、原型、组合继承、寄生式、寄生式组合继承、class
+         * 优先级
+         */
+
+        /* 6、截流 */
+        function throttle(func, delay) {
+            let timer = null;
+            let current = 0;
+
+            return function() {
+                console.log('inner');
+                let self = this;
+                const now = new Date().valueOf();
+
+                if (now - current >= delay) {
+                    clearTimeout(timer);
+                    current = now;
+                    return func.apply(self, arguments);
+                } else if (!timer) {
+                    timer = setTimeout(function() {
+                        current = now;
+                        func.apply(self, arguments);
+                    }, delay + current - now);
+                }
+            }
+        }
+
+        let box = document.getElementById('box');
+        let boxEvent = throttle(function() {
+            box.innerHTML = parseFloat(box.innerHTML) + 1;
+        }, 2000);
+        // document.documentElement.addEventListener('mousemove', boxEvent);
+
+        /* 7、洪丹 */
+        var age = 10;
+        var hd = {
+            age: 18,
+            foo: function(func) {
+                func(); // 隐式绑定传递参数丢失this的问题
+                arguments[0](); // 作为对象的方法被调用，隐式调用谁最后调用的函数this就指向谁。所以this指向Arguments对象
+            }
+        };
+        function hdfunc() {
+            console.log(this.age);
+        };
+        hd.foo(hdfunc);
+        /**
+         * Arguments对象。及静态作用域。
+         * AO: {arguments: {
+                    0: func,
+                    length: 1,
+                }}
+         * 
+         */
+
+        /* 8、洪丹 */
+        (function() {
+            var obj = {
+                age: 10,
+                foo: function(fn) {
+                    fn.call(this)(); // 相当于隐式调用丢失this。最后相当于函数默认调用
+                    arguments[0]()();
+                    arguments[0].call(this)();
+                    arguments[0]().call(this);
+                }
+            };
+            var age = 20;
+            function temp() {
+                return function() {
+                    console.log(this.age); // 匿名函数this永远指向全局
+                }
+            }
+            obj.foo(temp);
+        })();
+        /**
+         * 函数的4中调用方法对应四种this绑定方式
+         * 1、构造函数调用与new绑定。使用new调用一个构造函数，this肯定指向实例。
+         * 2、作为函数方法调用与显式绑定。call、apply、bind。指向传入的对象。可以解决隐式调用丢失，包裹函数、或者重复的辅助函数
+         * 3、作为对象的方法调用与隐式绑定。挂在对象上，使用obj.a调用。指向最后一个调用对象。作为参数或者变量传递时候
+         * 4、作为函数调用与默认绑定。全局对象
+         * 5、箭头函数。不存在this，跟父级。不能new、无arguments、不能bind。。。
+         * 6、setTimeout、匿名函数中的this指向window
+         */
+        var obj1 = {a:1, foo: function() {console.log(this.a)}};
+        var obj2 = {a:2, foo:obj1.foo}
+        obj2.foo(); // 为了说明隐式调用丢失this时，并不一定全指向全局
+
+        /* 9、实现input框length限制<10，length计算方式，中文2个字符，英文：1个字符 */
+        function strLength(str) {
+            if (!str) return '';
+            let length = 0;
+            for (var i = 0; i < str.length; i++) {
+                /\p{Unified_Ideograph}/u.test(str[i]) ? (length += 2) : (length += 1);
+                length === 11 && i--;
+                if (length >= 10) break;
+            }
+            console.log(i);
+            return str.slice(0, i+1);
+        }
+        /*
+         * 之前的/[\u4e00-\u9fa5]/太老了。基本适用于92年-99年，现在都20年了。
+         * /\p{Unified_Ideograph}/u这个正则。我也看不懂，但是能够正确匹配Unicode汉子字符
+        */
+
+        /* 10、kevin */
+        (function() {
+            var x = 1;
+            if (function f() {}) {
+                x += typeof f;
+            }
+            console.log(x);
+        })();
+        /**
+         * 凯文这个题关键就是 x += typeof f这一步的f是什么。
+         * 我最开始也不知道是undefined。
+         * 查资料大家说因为作为条件表达式，在if条件中function f() {}，被盼为true以后，函数就被销毁了。
+         * 所以全局访问不到f。你在这个函数最上面打印f就会报错。但是唯一让一个全局不存在的变量不报错的方法就是typeof ，他会给转化为undefined
+         * 很神奇。具体为什么在条件中的function f() {}被销毁我我也不清楚，欢迎大家告诉我
+         */
+
+        /* 11 */
+        (function yy(foo) {return console.log(typeof foo.bar)})({foo: {bar: 1}})
+        console.log(typeof yy);
+        /**
+         * 很简单的一个匿名函数函数自执行，传参后自己对应好就行。少吃鸡，别迷
+         * console.log(typeof yy);是我自己加的，就是为了验证一下上一个题，把函数当作表达式放在（）里，是不是执行后会被销毁。是的。这里也是undefined
+         */
+    </script>
+</body>
+</html>
