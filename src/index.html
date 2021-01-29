@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style></style>
+</head>
+<body>
+    <div id="root"></div>
+    <textarea>
+
+    </textarea>
+    <button id="button">
+        跳啊跳
+    </button>
+    <!-- <img src="./public/image/yy.png" /> -->
+    <script src="./vue/index.js">
+    
+    </script>
+    <script src="./index.js"></script>
+    <script>
+        button.onclick=function() {
+            window.history.pushState(null, '', '/a')
+        }
+    </script>
+    <script>
+        const a = async () => {
+            try {
+                console.log(2)
+                const bal = await new Promise(resolve => {
+                    console.log(3)
+                    setTimeout(() => {
+                        console.log(4)
+                        resolve('s')
+                    }, 2000)
+                }).then(x => {
+                    console.log(5)
+                    if (x==='s'){
+                        console.log(6)
+                        return Promise.reject('xxx');
+                    }
+                    return true;
+                })
+            } catch (error) {
+                console.log(7)
+                return Promise.reject(1)
+            }
+        }
+
+        const b = async () => {
+            console.log(1)
+            const data = await a().catch(error => {console.log('8', error)});
+            console.log('9', data);
+        }
+
+        b()
+    </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        /* kevin */
+        const promise = new Promise((resolve, reject) => {
+            resolve('success1');
+            reject('error');
+            resolve('success2');
+        });
+
+        promise.then(res => {
+            console.log('then:', res);
+        }).catch(error => {
+            console.log('catch:', err);
+        })
+
+        /* parseInt */
+        console.log(['1', '7', '11'].map(parseInt));
+        /**
+         * map\reduce\some\等都不处理空位。join\toString有一些特殊处理吧。
+         * split方法还会吗。'12'.split()是多少
+         * parseInt(value[, radix])。
+         * 转字符串、转数字。[1, 2]转字符串。[null]转字符串。null和undefined转数字。底层的基本方法。
+         * 比较坑的==判断。[] == ![]
+         * radix代表进制数。5进制转10进制，‘4321’；10进制转5进制'45';
+         * parseInt解析。从左到右。识别符号、去除空格
+         * radix在2-36之间
+         * 对象的增强写法不能用于构造函数
+         */
+    </script>
+</body>
+</html>

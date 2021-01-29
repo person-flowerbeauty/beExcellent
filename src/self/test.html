@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        let A = {key: 'A', type: 'div'};
+        let B1 = {key: 'B1', type: 'div', return: A};
+        let B2 = {key: 'B2', type: 'div', return: A};
+        let C1 = {key: 'C1', type: 'div', return: B1};
+        let C2 = {key: 'C2', type: 'div', return: B1};
+        A.child = B1;
+        B1.child = C1;
+        B1.sibling = B2;
+        C1.sibling = C2;
+
+        function startQueue(next) {
+            while (next) {
+                next = performSingleFilber(next);
+            }
+        }
+
+        function performSingleFilber(filber) {
+            beginWork(filber);
+            if (filber.child) return filber.child;
+            while (filber) {
+                if (filber.sibling) return filber.sibling;
+                filber = filber.return;
+            }
+        }
+
+        function beginWork(obj) {
+            console.log(obj.key);
+        }
+
+        startQueue(A)
+    </script>
+</body>
+</html>
